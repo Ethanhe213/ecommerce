@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.http import JsonResponse
+
 class Customer(models.Model):
     user=models.OneToOneField(User,null=True,blank=True,on_delete=models.CASCADE)
     name=models.CharField(max_length=200,null=True)
@@ -40,6 +40,15 @@ class Order(models.Model):
         total=sum([item.quantity for item in orderitems])
 
         return total
+    @property
+    def shipping(self):
+        shipping=False
+        orderitems=self.orderitem_set.all()
+        for i in orderitems:
+            if i.product.digital==False:
+                shipping=True
+        return shipping
+
 
 class OrderItem(models.Model):
     product=models.ForeignKey(Product, on_delete=models.SET_NULL,blank=True,null=True)
