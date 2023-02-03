@@ -9,7 +9,7 @@ class Customer(models.Model):
         return self.name
 class Product(models.Model):
     name=models.CharField(max_length=200,null=True)
-    price=models.FloatField()
+    price=models.DecimalField(max_digits=7,decimal_places=2)
     digital=models.BooleanField(default=False,null=True,blank=False)
     image=models.ImageField(null=True,blank=True)
     def __str__(self):
@@ -32,7 +32,7 @@ class Order(models.Model):
     @property
     def get_cart_total(self):
         orderitems=self.orderitem_set.all()
-        total=sum([item.get_total for item in orderitems])
+        total=round(sum([item.get_total for item in orderitems]),2)
         return total
     @property
     def get_cart_items(self):
