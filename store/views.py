@@ -3,7 +3,7 @@ from .models import *
 from django.http import JsonResponse
 import json
 import datetime
-from .utils import cartData,cookieCart
+from .utils import cartData,cookieCart,guestOrder
 def store(request):
     data=cartData(request)
     cartItems=data['cartItems']
@@ -58,14 +58,22 @@ def processOrder(request):
     if request.user.is_authenticated:
         customer=request.user.customer
         order,created=Order.objects.get_or_create(customer=customer,complete=False)
-        total=float(data['form']['total'].replace(',',''))
-        order.transaction_id=transaction_id
+  
         print(total)
         print(order.get_cart_total)
-        if total==order.get_cart_total:
+        
+        
+
+    else:
+        customer,order=guestOrder(request,data)
+    total=float(data['form']['total'].replace(',',''))
+    order.transaction_id=transaction_id
+    print(total)
+    print(order.get_cart_total)
+    if total==order.get_cart_total:
             order.complete=True
-        order.save()
-        if order.shipping==True:
+    order.save() 
+    if order.shipping==True:
             ShippingAddress.objects.create(
                 customer=customer,
                 order=order,
@@ -75,8 +83,5 @@ def processOrder(request):
                 zipcode=data['shipping']['zipcode'],
 
             )
-
-    else:
-        print('User is not logged in')
     return JsonResponse('Payment complete',safe=False)
 # Create your views here.
